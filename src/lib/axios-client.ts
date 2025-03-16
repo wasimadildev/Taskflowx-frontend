@@ -7,6 +7,9 @@ const options = {
   baseURL,
   withCredentials: true,
   timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+  }
 };
 
 const API = axios.create(options);
