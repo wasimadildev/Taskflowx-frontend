@@ -10,8 +10,6 @@ const options = {
   headers: {
     "Content-Type": "application/json",
   },
-  xsrfCookieName: 'XSRF-TOKEN',
-  xsrfHeaderName: 'X-XSRF-TOKEN',
 };
 
 const API = axios.create(options);
@@ -24,6 +22,7 @@ API.interceptors.request.use(function (config) {
   return Promise.reject(error);
 });
 
+// Add a response interceptor
 API.interceptors.response.use(
   (response) => {
     return response;
@@ -39,8 +38,11 @@ API.interceptors.response.use(
 
     const { data, status } = error.response;
 
-    if (data === "Unauthorized" && status === 401) {
+    // If unauthorized, redirect to login page
+    if ((data === "Unauthorized" || status === 401) && window.location.pathname !== "/") {
+      console.log("Unauthorized access, redirecting to login page");
       window.location.href = "/";
+      return Promise.reject(error);
     }
 
     const customError: CustomError = {
