@@ -9,16 +9,34 @@ const options = {
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
-  }
+  },
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
 };
 
 const API = axios.create(options);
+
+// Add a request interceptor to ensure credentials are always sent
+API.interceptors.request.use(function (config) {
+  config.withCredentials = true;
+  return config;
+}, function (error) {
+  return Promise.reject(error);
+});
 
 API.interceptors.response.use(
   (response) => {
     return response;
   },
   async (error) => {
+    if (!error.response) {
+      console.error("Network error or server not responding", error);
+      return Promise.reject({
+        ...error,
+        errorCode: "NETWORK_ERROR"
+      });
+    }
+
     const { data, status } = error.response;
 
     if (data === "Unauthorized" && status === 401) {
